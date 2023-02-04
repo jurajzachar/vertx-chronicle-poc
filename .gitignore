@@ -1,0 +1,17 @@
+# IntelliJ
+*.iml
+.idea/*
+!.idea/runConfigurations/
+
+# Mac
+.DS_Store
+
+# Maven
+target/
+**/.flattened-pom.xml
+
+# Misc
+.vertx
+.factorypath
+.directory
+
