@@ -50,6 +50,7 @@ Open a connection to `ws://localhost:8888` and submit a command instructing serv
 ## Benchmark
 
 ### Persistent Counter Arithmetics
+
 ```
 Benchmark                   (value)   Mode  Cnt  Score   Error   Units
 PerfBenchmark.arithmetics     10.01  thrpt    5  3,948 ± 0,112  ops/us
