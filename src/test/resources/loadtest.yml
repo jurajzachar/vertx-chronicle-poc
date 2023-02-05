@@ -1,0 +1,26 @@
+# Artillery.io load test manifest
+config:
+  target: "ws://localhost:8888/ws"
+  processor: "./data-functions.js"
+  ensure:
+    maxErrorRate: 1
+  phases:
+    - duration: 60
+      arrivalRate: 1
+      rampTo: 10
+      name: "10x"
+    - duration: 60
+      arrivalRate: 10
+      rampTo: 100
+      name: "100x"
+
+  ws:
+    skipUTF8Validation: true
+    maxPayload: 2048
+scenarios:
+  - engine: "ws"
+    flow:
+      - loop:
+        - function: "createCommandObject"
+        - send: "{{ data }}"
+        count: 100

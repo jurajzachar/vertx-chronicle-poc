@@ -9,13 +9,15 @@ import org.tinylog.Logger;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 @NoArgsConstructor
 public class PersistentCounter {
 
   enum CMD {ADD, SUBTRACT, YIELD}
 
-  private final Map<String, Number> counters = new HashMap<>();
+  private final Map<String, Number> counters = new ConcurrentHashMap<>();
   private final AppendOnlyLog appender = Optional.ofNullable(System.getProperty("IS_CHRONICLE_ENABLED"))
     .or(() -> Optional.of("false"))
     .map(Boolean::valueOf)
@@ -73,4 +75,12 @@ public class PersistentCounter {
     responseHandler.handle(appender.append(request, new JsonObject().put("value", computed)));
   }
 
+  Map<String, Object> getCounters() {
+    return counters
+      .entrySet()
+      .stream()
+      .map(e -> Map.entry(e.getKey(), (Object) e.getValue()))
+      .collect(Collectors.toMap(e -> e.getKey(), e -> e.getValue()))
+      ;
+  }
 }

@@ -13,7 +13,7 @@ class OnComputed implements AppendOnlyLog {
     private final String outputDir = Optional.ofNullable(
       System.getProperty("CHRONICLE_QUEUE_DIRECTORY")
     )
-    .orElse("tmp/vertx-chronicle-poc");
+    .orElse("/tmp/vertx-chronicle-poc");
 
     OnComputed() {
       Logger.info("instantiated Chronicle Queue appender with directory: {}", outputDir);

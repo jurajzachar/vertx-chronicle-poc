@@ -6,16 +6,16 @@ import io.vertx.core.http.ServerWebSocket;
 import io.vertx.core.json.JsonObject;
 import org.tinylog.Logger;
 
-import java.time.Clock;
+import java.util.stream.IntStream;
 
 public class VMain extends AbstractVerticle {
 
   public static int port = 8888;
 
   //underlying stateful service
-  private final PersistentCounter service = new PersistentCounter();
+  private static final PersistentCounter service = new PersistentCounter();
 
-  private void websocketHandler(ServerWebSocket server) {
+  private static void websocketHandler(ServerWebSocket server) {
     final var clientAddress = server.remoteAddress().hostAddress();
     server.textMessageHandler(payload -> {
       try {
@@ -32,24 +32,34 @@ public class VMain extends AbstractVerticle {
 
   @Override
   public void start(Promise<Void> startPromise) throws Exception {
-    vertx.createHttpServer()
-    //wss
-    .webSocketHandler(this::websocketHandler)
-    //time endpoint
-    .requestHandler(req -> {
-      req.response()
-        .putHeader("content-type", "application/json")
-        .end(new JsonObject()
-          .put("time", Clock.systemUTC().instant())
-          .toBuffer()
-        );
-    }).listen(port, http -> {
-      if (http.succeeded()) {
-        startPromise.complete();
-        Logger.info("http server started on port {}", port);
-      } else {
-        startPromise.fail(http.cause());
+    final var server = new AbstractVerticle(){
+      @Override
+      public void start() throws Exception {
+        vertx.createHttpServer()
+          //wss
+          .webSocketHandler(VMain::websocketHandler)
+          //time endpoint
+          .requestHandler(req -> {
+            req.response()
+              .putHeader("content-type", "application/json")
+              .end(
+                new JsonObject().put("data", new JsonObject(service.getCounters())).toBuffer()
+              );
+          }).listen(port, http -> {
+            if (http.succeeded()) {
+              startPromise.tryComplete();
+              Logger.info("http server started on port {}", port);
+            } else {
+              startPromise.tryFail(http.cause());
+            }
+          });
       }
+    };
+
+    // M1 Pro
+    IntStream.rangeClosed(1, 10).forEach(instance -> {
+      Logger.info("deploying server instance #  {}", instance);
+      vertx.deployVerticle(server);
     });
   }
 }

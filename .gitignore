@@ -14,4 +14,7 @@ target/
 .vertx
 .factorypath
 .directory
-
+node_modules
+package.lock
+package.json
+load_test_report.json
